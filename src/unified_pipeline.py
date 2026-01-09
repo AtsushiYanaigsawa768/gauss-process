@@ -235,7 +235,7 @@ class RationalQuadraticKernel(Kernel):
         return [
             (1e-3, 1e3),  # length_scale
             (1e-3, 1e3),  # variance
-            (1e-3, 1e2),  # alpha
+            (1e-3, 1e3),  # alpha
         ]
 
     def get_params(self) -> np.ndarray:
@@ -275,7 +275,7 @@ class ExponentialKernel(Kernel):
 
     def _get_default_bounds(self) -> List[Tuple[float, float]]:
         return [
-            (1e-3, 1e2),   # omega
+            (1e-3, 1e3),   # omega
             (1e-3, 1e3),   # variance
         ]
 
@@ -310,7 +310,7 @@ class TCKernel(Kernel):
 
     def _get_default_bounds(self) -> List[Tuple[float, float]]:
         return [
-            (1e-3, 1e2),   # omega
+            (1e-3, 1e3),   # omega
             (1e-3, 1e3),   # variance
         ]
 
@@ -413,7 +413,7 @@ class FirstOrderStableSplineKernel(Kernel):
 
     def _get_default_bounds(self) -> List[Tuple[float, float]]:
         return [
-            (1e-3, 1e2),   # beta
+            (1e-3, 1e3),   # beta
             (1e-3, 1e3),   # variance
         ]
 
@@ -449,7 +449,7 @@ class SecondOrderStableSplineKernel(Kernel):
 
     def _get_default_bounds(self) -> List[Tuple[float, float]]:
         return [
-            (1e-3, 1e2),   # beta
+            (1e-3, 1e3),   # beta
             (1e-3, 1e3),   # variance
         ]
 
@@ -485,7 +485,7 @@ class HighFrequencyStableSplineKernel(Kernel):
 
     def _get_default_bounds(self) -> List[Tuple[float, float]]:
         return [
-            (1e-3, 1e2),   # beta
+            (1e-3, 1e3),   # beta
             (1e-3, 1e3),   # variance
         ]
 
@@ -521,10 +521,9 @@ class StableSplineKernel(Kernel):
 
     def _get_default_bounds(self) -> List[Tuple[float, float]]:
         return [
-            (1e-3, 1e2),   # beta
+            (1e-3, 1e3),   # beta
             (1e-3, 1e3),   # variance
         ]
-
     def get_params(self) -> np.ndarray:
         return np.array([self.params['beta'], self.params['variance']])
 
@@ -932,6 +931,7 @@ def run_frequency_response(mat_files: List[str], output_dir: Path, n_files: int 
         sys.executable,
         'src/frequency_response.py',
         *mat_files_str,
+        '--recursive',
         '--n-files', str(n_files),
         '--out-dir', str(output_dir),
         '--out-prefix', 'unified',
@@ -966,6 +966,7 @@ def run_fourier_transform(mat_files: List[str], output_dir: Path, n_files: int =
         sys.executable,
         'src/fourier_transform.py',
         *mat_files_str,
+        '--recursive',
         '--out-dir', str(output_dir),
         '--out-prefix', 'unified',
         '--nd', str(nd)
@@ -2202,9 +2203,8 @@ def run_comprehensive_test(mat_files: List[str], output_base_dir: str = 'test_ou
 
     # Test configurations
     # GP kernels
-    # kernels = ['rbf', 'matern', 'matern12', 'matern32', 'matern52', 'rq', 'exp', 'tc', 'dc', 'di',
-    #            'ss1', 'ss2', 'sshf', 'stable_spline']
-    kernels = [ 'matern52']
+    kernels = ['rbf', 'matern', 'matern12', 'matern32', 'matern52', 'rq', 'exp', 'tc', 'dc', 'di',
+               'ss1', 'ss2', 'sshf', 'stable_spline']
     # Classical methods
     classical_methods = ['nls', 'ls']
 

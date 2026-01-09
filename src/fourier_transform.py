@@ -474,13 +474,33 @@ def main():
         action='store_true',
         help='Disable plot generation'
     )
+    parser.add_argument(
+        '--recursive',
+        action='store_true',
+        help='Recursively search directories for MAT files'
+    )
 
     args = parser.parse_args()
 
     # Resolve input files
     mat_files = []
     for pattern in args.mat_files:
-        mat_files.extend(glob.glob(pattern))
+        p = Path(pattern)
+        if p.exists():
+            if p.is_dir():
+                # Directory: search for .mat files
+                if args.recursive:
+                    mat_files.extend(p.rglob("*.mat"))
+                else:
+                    mat_files.extend(p.glob("*.mat"))
+            elif p.is_file():
+                mat_files.append(p)
+        else:
+            # Treat as glob pattern
+            mat_files.extend([Path(x) for x in glob.glob(pattern, recursive=args.recursive)])
+
+    # Remove duplicates and sort
+    mat_files = sorted(set(mat_files))
 
     if not mat_files:
         print("Error: No MAT files found")
