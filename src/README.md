@@ -47,6 +47,49 @@ python main.py data/sample_data/*.mat --kernel rbf --extract-fir --fir-length 10
 python main.py --use-existing output/frf.csv --kernel matern --nu 2.5
 ```
 
+## Default Parameters (Paper Baseline)
+
+| Parameter | Value |
+|:---|:---|
+| Plant | Quanser Rotary Flexible Link |
+| Controller | P-controller (K_p = 1.65) |
+| Sampling rate | 500 Hz (dt = 0.002 s) |
+| Frequency range | [0.1, 250] Hz (log-spaced) |
+| N_d (frequency points) | 50 |
+| T (observation duration) | 1 hour |
+| Best GPR kernel | Matern-5/2 |
+| FIR length | 1024 taps |
+| Training signal | Multisine |
+| Validation signal | Random square wave |
+
+<p align="center">
+<img src="../docs/images/control_block_diagram.jpg" alt="Control block diagram" width="450"><br>
+<em>Closed-loop feedback control system (P-controller, K_p = 1.65)</em>
+</p>
+
+## Summary Results
+
+| | Finding |
+|:---|:---|
+| **Best GPR kernel** | Matern-5/2: RMSE = 0.0290 (multisine), 0.0589 (square wave) |
+| **Best classical method** | NLS: RMSE = 0.0275 (multisine), 0.0577 (square wave) |
+| **Key advantage** | GPR matches NLS accuracy **without** parametric model structure |
+| **Sparse data winner** | DI kernel excels at N_d <= 30 |
+| **Most robust** | RBF and SS1 maintain stable accuracy across all observation durations |
+
+<p align="center">
+<img src="../docs/images/flexlink.jpg" alt="Quanser Rotary Flexible Link" width="400"><br>
+<em>Quanser Rotary Flexible Link -- experimental apparatus</em>
+</p>
+
+See individual module READMEs for detailed results:
+- [gpr/](gpr/) -- Kernel comparison tables, N_d and T effect analysis
+- [fir_model/](fir_model/) -- Time-domain FIR validation
+- [frequency_transform/](frequency_transform/) -- FRF estimation output (Bode/Nyquist)
+- [classical_methods/](classical_methods/) -- LS/NLS comparison
+- [visualization/](visualization/) -- I/O signal examples
+- [pipeline/](pipeline/) -- End-to-end pipeline results
+
 ## Dependencies
 
 Core: `numpy`, `scipy`, `scikit-learn`, `matplotlib`, `pandas`

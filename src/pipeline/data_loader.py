@@ -6,18 +6,13 @@ Data-loading and frequency-response generation utilities for the pipeline.
 
 Functions:
 - load_frf_data:                     Load a FRF CSV into a DataFrame.
-- run_frequency_response:            Invoke ``frequency_response.py`` via subprocess.
-- run_fourier_transform:             Invoke ``fourier_transform.py`` via subprocess.
+- run_frequency_response:            Compute FRF via the frf_estimator module.
+- run_fourier_transform:             Compute FRF via the fourier_estimator module.
 - generate_validation_data_from_mat: Compute validation FRF directly from a MAT file.
-
-All functions preserve the exact numerical behaviour of the original
-``unified_pipeline.py`` implementations.
 """
 
 from __future__ import annotations
 
-import subprocess
-import sys
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -54,7 +49,7 @@ def load_frf_data(frf_file: Path) -> pd.DataFrame:
 
 
 # =====================
-# Subprocess Runners
+# Frequency Estimation
 # =====================
 
 def run_frequency_response(
@@ -64,7 +59,7 @@ def run_frequency_response(
     time_duration: Optional[float] = None,
     nd: int = 100,
 ) -> Path:
-    """Run ``frequency_response.py`` as a subprocess and return the output CSV path.
+    """Compute FRF using the frf_estimator module and save to CSV.
 
     Args:
         mat_files:     List of input MAT file paths.
@@ -75,40 +70,23 @@ def run_frequency_response(
 
     Returns:
         Path to the generated ``unified_frf.csv``.
-
-    Raises:
-        RuntimeError: If the subprocess exits with non-zero status or the
-                      expected output file is not created.
     """
+    from src.frequency_transform.transform import estimate_frequency_response
+
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Convert mat_files to absolute paths
-    mat_files_str = [str(Path(f).resolve()) for f in mat_files]
-
-    cmd = [
-        sys.executable,
-        'src/frequency_response.py',
-        *mat_files_str,
-        '--recursive',
-        '--n-files', str(n_files),
-        '--out-dir', str(output_dir),
-        '--out-prefix', 'unified',
-        '--nd', str(nd),
-    ]
-
-    if time_duration is not None and n_files == 1:
-        cmd.extend(['--time-duration', str(time_duration)])
-
-    print(f"Running frequency_response.py with command: {' '.join(cmd)}")
-    result = subprocess.run(cmd, capture_output=True, text=True)
-
-    if result.returncode != 0:
-        print(f"Error running frequency_response.py:\n{result.stderr}")
-        raise RuntimeError(f"frequency_response.py failed with code {result.returncode}")
+    print(f"Computing FRF (method=frf, nd={nd}, n_files={n_files})")
+    df = estimate_frequency_response(
+        mat_files=mat_files,
+        method='frf',
+        nd=nd,
+        time_duration=time_duration,
+        n_files=n_files,
+    )
 
     frf_csv = output_dir / 'unified_frf.csv'
-    if not frf_csv.exists():
-        raise RuntimeError(f"Expected output file not found: {frf_csv}")
+    df.to_csv(frf_csv, index=False)
+    print(f"FRF saved to {frf_csv} ({len(df)} points)")
 
     return frf_csv
 
@@ -120,7 +98,7 @@ def run_fourier_transform(
     time_duration: Optional[float] = None,
     nd: int = 100,
 ) -> Path:
-    """Run ``fourier_transform.py`` as a subprocess and return the output CSV path.
+    """Compute FRF using the fourier_estimator module and save to CSV.
 
     Args:
         mat_files:     List of input MAT file paths.
@@ -131,41 +109,23 @@ def run_fourier_transform(
 
     Returns:
         Path to the generated ``unified_fft.csv``.
-
-    Raises:
-        RuntimeError: If the subprocess exits with non-zero status or the
-                      expected output file is not created.
     """
+    from src.frequency_transform.transform import estimate_frequency_response
+
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    mat_files_str = [str(Path(f).resolve()) for f in mat_files]
-
-    cmd = [
-        sys.executable,
-        'src/fourier_transform.py',
-        *mat_files_str,
-        '--recursive',
-        '--out-dir', str(output_dir),
-        '--out-prefix', 'unified',
-        '--nd', str(nd),
-    ]
-
-    if n_files is not None:
-        cmd.extend(['--n-files', str(n_files)])
-
-    if time_duration is not None:
-        cmd.extend(['--time-duration', str(time_duration)])
-
-    print(f"Running fourier_transform.py with command: {' '.join(cmd)}")
-    result = subprocess.run(cmd, capture_output=True, text=True)
-
-    if result.returncode != 0:
-        print(f"Error running fourier_transform.py:\n{result.stderr}")
-        raise RuntimeError(f"fourier_transform.py failed with code {result.returncode}")
+    print(f"Computing FRF (method=fourier, nd={nd}, n_files={n_files})")
+    df = estimate_frequency_response(
+        mat_files=mat_files,
+        method='fourier',
+        nd=nd,
+        time_duration=time_duration,
+        n_files=n_files,
+    )
 
     fft_csv = output_dir / 'unified_fft.csv'
-    if not fft_csv.exists():
-        raise RuntimeError(f"Expected output file not found: {fft_csv}")
+    df.to_csv(fft_csv, index=False)
+    print(f"Fourier FRF saved to {fft_csv} ({len(df)} points)")
 
     return fft_csv
 

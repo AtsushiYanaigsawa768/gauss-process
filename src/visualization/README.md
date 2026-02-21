@@ -52,3 +52,26 @@ The `time_window` parameter accepts duration strings: `"5s"`, `"1min"`, `"30min"
 | Legend | 24 pt |
 | Line width | 3.5 |
 | Marker size | 12 |
+
+## Example Outputs
+
+### I/O Signal Plots
+
+<table>
+<tr>
+<td align="center" width="50%">
+<img src="../../docs/images/figure_input_data.png" alt="Multisine input/output" width="400"><br>
+<em>Multisine input u(t) and output y(t)</em>
+</td>
+<td align="center" width="50%">
+<img src="../../docs/images/figure_wave_data.png" alt="Square wave input/output" width="400"><br>
+<em>Square wave input u(t) and output y(t)</em>
+</td>
+</tr>
+</table>
+
+Time-domain signals used for system identification of the Quanser Rotary Flexible Link. The multisine signal is used for training (FRF estimation + GP regression), while the square wave serves as an unseen validation signal.
+
+### Plot Style in Context
+
+All figures in this project (Bode plots, Nyquist plots, GP predictions, FIR validations) are rendered using `configure_plot_style()` with the defaults listed above. This ensures consistent, publication-quality formatting across all outputs.

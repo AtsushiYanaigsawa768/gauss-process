@@ -1,6 +1,6 @@
 # pipeline/ -- パイプライン使用方法
 
-[English version](../../../../src/README_PIPELINE.md)
+[English version](../../../../src/pipeline/README.md)
 
 ## 概要
 
@@ -94,3 +94,40 @@ output/
 ```bash
 python -m src.pipeline.comprehensive_test
 ```
+
+## デフォルトパラメータでの実行結果
+
+### 論文基準条件のコマンド
+
+以下のコマンドで論文の基準条件（Matern-5/2、N_d = 50、T = 1時間）を再現できる:
+
+```bash
+python main.py data/sample_data/*.mat --kernel matern --nu 2.5 \
+    --normalize --log-frequency --nd 50 --n-files 1 \
+    --extract-fir --fir-length 1024 \
+    --fir-validation-mat data/sample_data/input_test_20250913_010037.mat \
+    --out-dir output
+```
+
+### エンドツーエンドの結果
+
+| ステージ | 出力 | 主要指標 |
+|:---|:---|:---|
+| FRF推定 | 50周波数点、[0.1, 250] Hz | 同期復調法、対数間隔グリッド |
+| GP回帰 | 平滑化されたG(jw) +/-2シグマ帯付き | 最良カーネル: Matern-5/2 |
+| FIR検証 | 1024タップFIR係数 | RMSE = 0.0290 rad（マルチサイン）、0.0589 rad（矩形波） |
+
+<p align="center">
+<img src="../../../../docs/images/control_block_diagram.jpg" alt="制御ブロック図" width="450"><br>
+<em>閉ループフィードバック制御系（P制御器、K_p = 1.65）</em>
+</p>
+
+### 包括テストの概要
+
+`comprehensive_test.py` は全11カーネル + LS/NLS を複数の N_d（10, 30, 50, 100）と T（10分、30分、60分、600分）の組み合わせで評価する。結果は論文の表I--IIIと一致している:
+
+- **最良GPRカーネル**: Matern-5/2（RMSE = 0.0290、N_d = 50、T = 60分）
+- **最良古典的手法**: NLS（RMSE = 0.0275、モデル次数 n_b = 2, n_a = 4 が必要）
+- **最もロバスト**: RBF と SS1（全観測時間に対して安定）
+
+詳細なカーネル比較表は [gpr/README.md](../gpr/README.md) を参照。

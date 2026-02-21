@@ -66,3 +66,40 @@ The pipeline writes to `--out-dir`:
 - GP predictions (CSV)
 - Bode and Nyquist plots (PNG)
 - FIR coefficients and validation metrics (when `--extract-fir` is set)
+
+## Results with Default Parameters
+
+### Paper Baseline Command
+
+The following command reproduces the paper's baseline result (Matern-5/2, N_d = 50, T = 1 hour):
+
+```bash
+python main.py data/sample_data/*.mat --kernel matern --nu 2.5 \
+    --normalize --log-frequency --nd 50 --n-files 1 \
+    --extract-fir --fir-length 1024 \
+    --fir-validation-mat data/sample_data/input_test_20250913_010037.mat \
+    --out-dir output
+```
+
+### End-to-End Results
+
+| Stage | Output | Key Metric |
+|:---|:---|:---|
+| FRF Estimation | 50 frequency points, [0.1, 250] Hz | Synchronous demodulation, log-spaced grid |
+| GP Regression | Smoothed G(jw) with +/-2 sigma bands | Best kernel: Matern-5/2 |
+| FIR Validation | 1024-tap FIR coefficients | RMSE = 0.0290 rad (multisine), 0.0589 rad (square wave) |
+
+<p align="center">
+<img src="../../docs/images/control_block_diagram.jpg" alt="Control block diagram" width="450"><br>
+<em>Closed-loop feedback control system (P-controller, K_p = 1.65)</em>
+</p>
+
+### Comprehensive Test Summary
+
+`comprehensive_test.py` evaluates all 11 kernels + LS/NLS across multiple N_d (10, 30, 50, 100) and T (10 min, 30 min, 60 min, 600 min) combinations. Results are consistent with the paper's Tables I--III:
+
+- **Best GPR kernel**: Matern-5/2 (RMSE = 0.0290, N_d = 50, T = 60 min)
+- **Best classical**: NLS (RMSE = 0.0275, requires model order n_b = 2, n_a = 4)
+- **Most robust**: RBF and SS1 (stable across all observation durations)
+
+See [gpr/README.md](../gpr/README.md#results-with-default-parameters) for detailed kernel comparison tables.

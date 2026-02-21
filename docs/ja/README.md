@@ -1,0 +1,246 @@
+# 周波数領域ガウス過程回帰によるシステム同定
+
+<p align="center">
+  <img src="../images/flexlink.jpg" alt="Quanser Rotary Flexible Link" width="500">
+</p>
+
+<p align="center">
+  <em>Quanser Rotary Flexible Link — 本研究で使用した実験装置</em>
+</p>
+
+> **論文**: 柳澤 篤, 大木 健太郎, "周波数領域ガウス過程回帰による伝達関数推定を用いたシステム同定," *SICE 制御システムシンポジウム (ISCS)*, 2026.
+>
+> **著者**: 柳澤 篤, 大木 健太郎 — 京都大学
+
+[English README](../../README.md) &nbsp;|&nbsp; [開発者向けドキュメント (src/)](src/README.md)
+
+---
+
+## 概要
+
+### なぜシステム同定か？
+
+制御設計には制御対象の**高精度な数学モデル**が必要です。実機はシミュレーションと異なり、正確なモデルには**大量の計測データ**が求められます。**システム同定**は入出力データから直接モデルを構築する手法です。
+
+### 課題
+
+実用的なシステム同定には、障壁があります：
+
+**モデル構造選択** — パラメトリック手法はモデル構造を事前に選択する必要があり、線形時不変系でさえ**困難**です。ノンパラメトリック手法（例：カーネルベースFIR推定）は構造選択を回避できますが、不確実性情報が不足しています。
+
+
+### なぜGPR？
+
+**ガウス過程回帰（GPR）** はこれらの課題を同時に解決します：
+- **不確実性定量化**（±2σ信頼帯）付きの滑らかな補間
+- **パラメトリックモデル**構造が不要
+
+**しかし**、GPRには**O(n³)の計算コスト**という致命的な障壁があります。時間領域のシステム同定では n ~ 10⁴–10⁵ サンプルとなり、計算が困難です。
+
+### 解決策 — 周波数領域圧縮
+
+**フーリエ変換**により大規模時系列データを約100点のFRFに圧縮し、**システムダイナミクスを完全に保持**します。これによりGPRの計算コストをO(n³)から**O(N_d³)** に削減し、実用的にします。
+
+### 主なContribution
+
+1. **周波数領域GPRフレームワーク** — 10⁴–10⁵の時間領域点ではなく約100点のFRFサンプルで動作し、長時間観測データでも実用的なGPRベースのシステム同定を実現
+
+2. **実機検証** — **Quanser Rotary Flexible Link** で実験的に検証し、シミュレーション以外への適用性を実証
+
+3. **包括的カーネル比較** — **11種のカーネル関数**と従来手法（LS / NLS）を比較し、**Matérn-5/2** が最良のGPRカーネルであることを特定
+
+---
+
+## 手法パイプライン
+
+```
+┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
+│ Step 1: FRF     │      │ Step 2: GPR     │      │ Step 3: FIR     │      │    評価          │
+│ 周波数応答推定   │─────▶│ GPR補間          │─────▶│ FIRモデル再構成  │─────▶│   (RMSE)        │
+│                 │      │                 │      │                 │      │                 │
+│ u(t),y(t) →    │      │ 連続的なG        │      │ IDFT → h_k      │      │ ŷ(t) vs y(t)   │
+│ Ĝ(jω_k)        │      │ ±2σ不確実性帯    │      │ FIR畳み込み      │      │                 │
+└─────────────────┘      └─────────────────┘      └─────────────────┘      └─────────────────┘
+   ~10⁵サンプル              ~100点               FIR係数                    時間領域検証
+   → ~100 FRF点             O(N_d³) 実用的        Hermitian IDFT経由
+```
+
+<p align="center">
+  <img src="../images/control_block_diagram.jpg" alt="フィードバック制御ブロック図" width="450">
+</p>
+<p align="center"><em>閉ループフィードバック制御系（P制御器、K_p = 1.65）</em></p>
+
+---
+
+## 実験結果
+
+### 基準条件の結果（N_d = 50、T = 1時間）
+
+| 手法 | マルチサイン (×10⁻² rad) | 矩形波 (×10⁻² rad) |
+|:---|:---:|:---:|
+| **GPRカーネル** | | |
+| DC | 7.54 | 15.8 |
+| DI | 6.92 | 15.1 |
+| Exponential | 16.7 | 36.2 |
+| Matérn-1/2 | 3.01 | 5.97 |
+| Matérn-3/2 | 2.94 | 6.04 |
+| **Matérn-5/2** | **2.90** | **5.89** |
+| RBF | 3.05 | 5.96 |
+| SS1（安定スプライン1次） | 3.01 | 5.97 |
+| SS2（安定スプライン2次） | 5.59 | 8.22 |
+| SSHF（高周波スプライン） | 3.44 | 6.31 |
+| Stable Spline | 6.05 | 9.93 |
+| **従来手法** | | |
+| LS（最小二乗法） | 9.79 | 26.9 |
+| NLS（非線形最小二乗法） | **2.75** | **5.77** |
+
+> **Matérn-5/2** はGPRカーネル中最高精度（RMSE = 0.0290）を達成し、NLS（0.0275）に匹敵します。NLSは**物理的に導出された**モデル構造（有理関数、分子次数2、分母次数4）に依存しますが、GPRは**事前の構造知識なし**で同等の精度を実現します。
+
+### GPR補間とFIRモデル検証
+
+<table>
+<tr>
+<td align="center" width="33%">
+<img src="../images/gpr_nyquist_interpolation.png" alt="GPR Nyquist補間" width="280"><br>
+<em>Nyquist図上のGPR補間<br>（Matérn-5/2、N_d = 50）</em>
+</td>
+<td align="center" width="33%">
+<img src="../images/fir_validation_multisine.png" alt="FIR検証 - マルチサイン" width="280"><br>
+<em>マルチサイン入力の検証<br>（RMSE = 0.0290）</em>
+</td>
+<td align="center" width="33%">
+<img src="../images/fir_validation_square_wave.png" alt="FIR検証 - 矩形波" width="280"><br>
+<em>矩形波入力の検証<br>（RMSE = 0.0589）</em>
+</td>
+</tr>
+</table>
+
+GPRから再構成されたFIRモデルは、**学習信号**（マルチサイン）と全く**異なる検証信号**（矩形波）の両方を正確に追従します。
+
+### 周波数点数 N_d の影響（T = 60分）
+
+| 手法 | N_d = 10 | N_d = 30 | N_d = 50 | N_d = 100 |
+|:---|:---:|:---:|:---:|:---:|
+| DI | **7.93** | **9.92** | 6.92 | 6.75 |
+| Matérn-3/2 | 8.57 | 18.1 | 2.94 | 4.29 |
+| Matérn-5/2 | 9.79 | 18.0 | **2.90** | 2.46 |
+| RBF | 9.16 | 18.0 | 3.05 | 2.47 |
+| SS1 | 9.13 | 22.4 | 3.01 | **2.45** |
+| SSHF | 11.1 | 24.3 | 3.44 | 2.73 |
+| NLS | 9.40 | 14.5 | **2.75** | **2.35** |
+
+<sub>RMSE × 10⁻² [rad]（マルチサイン入力）。**太字** = 列内最良。</sub>
+
+- **疎なデータ（N_d ≤ 30）**: **DIカーネル**が優位 — 対角構造により遠い周波数点間の過度な外挿を回避
+- **密なデータ（N_d ≥ 50）**: **Matérn-5/2** がGPRカーネル中最良; C²のサンプルパスが物理的FRFの滑らかさに合致
+
+### 観測時間 T の影響（N_d = 50）
+
+| 手法 | 10分 | 30分 | 60分 | 600分 |
+|:---|:---:|:---:|:---:|:---:|
+| DI | 6.87 | 6.93 | 6.92 | 7.03 |
+| Matérn-3/2 | 3.23 | 2.98 | 2.94 | 3.98 |
+| Matérn-5/2 | 4.12 | **3.00** | **2.90** | 3.78 |
+| RBF | **3.05** | 3.02 | 3.05 | **3.03** |
+| SS1 | **3.00** | 3.01 | 3.01 | 3.04 |
+| SSHF | 3.40 | 3.43 | 3.44 | 3.43 |
+| NLS | **2.74** | **2.90** | **2.75** | **2.90** |
+
+<sub>RMSE × 10⁻² [rad]（マルチサイン入力）。**太字** = 列内最良。</sub>
+
+- **RBF**: 平滑化効果が高周波ノイズを抑制 — 短時間データでも安定
+- **SS1**: 安定性事前分布が指数減衰を強制 — 観測時間に対してロバスト
+- **Matérn-5/2**: 30–60分のデータで最高精度を達成するが、観測時間への感度が高い
+
+### 推定された周波数応答（Nyquist図）
+
+<p align="center">
+  <img src="../images/nyquist_100points.png" alt="100周波数点のNyquist図" width="500">
+</p>
+<p align="center"><em>Nyquist平面上の推定FRF（N_d = 100、T = 1時間）</em></p>
+
+### まとめ
+
+| | 知見 |
+|:---|:---|
+| **問題** | GPRのO(n³)計算コストが大規模時間領域データでのシステム同定への直接適用を妨げる |
+| **手法** | 周波数領域圧縮：~10⁵時間サンプル → ~100 FRF点、GPRを**実用的**に |
+| **最良カーネル** | **Matérn-5/2** がGPR最高精度（RMSE = 0.0290）を達成、NLS（0.0275）に匹敵 |
+| **主な利点** | GPRはパラメトリックモデルを**指定せずに**不確実性定量化を提供 |
+| **ロバスト性** | RBFとSS1はわずか10分の観測でも安定した精度を維持 |
+
+> **要点**: 周波数領域GPRは、不確実性定量化と実用的でスケーラブルなシステム同定を**橋渡し**します。
+
+---
+
+## 実験設定
+
+| パラメータ | 値 |
+|:---|:---|
+| **制御対象** | Quanser Rotary Flexible Link |
+| **制御器** | P制御器（K_p = 1.65） |
+| **サンプリングレート** | 500 Hz（Δt = 0.002 s） |
+| **周波数範囲** | [0.1, 250] Hz（対数等間隔） |
+| **学習信号** | マルチサイン |
+| **検証信号** | ランダム矩形波 |
+| **周波数点数** | N_d ∈ {10, 30, 50, 100} |
+| **観測時間** | 10分、30分、60分、600分 |
+| **過渡応答除去** | τ_drop = 0.02 s |
+| **ハイパーパラメータ探索** | パラメータ毎に [10⁻³, 10³] の対数等間隔30点 |
+| **検証用FRF** | N_val = 150点（独立した計測セッション） |
+
+### 制約と今後の展望
+
+- 現在の検証は**SISO**系に限定 — **MIMO**系・**非線形**系は未検証
+- 実部・虚部の独立モデリングでは**安定性・因果性**制約を組み込めない
+- 事後不確実性が**制御器設計**にまだ活用されていない
+- **今後**: Hardy空間RKHSによる複素値GPRで安定性制約付きの実部・虚部同時モデリング
+
+---
+
+## クイックスタート
+
+### インストール
+
+```bash
+conda create --name GaussProcess python=3.11
+conda activate GaussProcess
+git clone https://github.com/AtsushiYanaigsawa768/gauss_process.git
+cd gauss_process
+pip install -r requirements.txt
+```
+
+### パイプラインの実行
+
+```bash
+# フルパイプライン：周波数推定 + GP回帰 + FIR抽出
+python main.py input/*.mat --kernel matern --nu 2.5 --normalize --log-frequency \
+  --nd 50 --extract-fir --fir-length 1024 --out-dir output
+
+# RBFカーネルを使用
+python main.py input/*.mat --kernel rbf --extract-fir --out-dir output
+
+# 既存のFRFデータを使用
+python main.py --use-existing output/frf.csv --kernel matern --nu 2.5
+
+# 全オプション表示
+python main.py --help
+```
+
+---
+
+## 参考文献
+
+- C.E. Rasmussen and C.K.I. Williams, *Gaussian Processes for Machine Learning*, MIT Press, 2006.
+- R. Pintelon et al., "Parametric Identification of Transfer Functions in the Frequency Domain — A Survey," *IEEE Trans. Autom. Control*, 1994.
+- L. Ljung, *System Identification: Theory for the User*, 2nd ed., Prentice Hall, 1999.
+- G. Pillonetto and G. De Nicolao, "A New Kernel-Based Approach for Linear System Identification," *Automatica*, 2010.
+- C.E. Rasmussen, "Gaussian Processes in Machine Learning," *LNCS*, vol. 3176, 2004.
+- J. Hensman et al., "Gaussian Processes for Big Data," *UAI*, 2013.
+- H. Akaike, "A New Look at the Statistical Model Identification," *IEEE Trans. Autom. Control*, 1974.
+
+---
+
+<p align="center">
+  <sub>京都大学 — 情報学研究科 応用数学・物理学専攻 / 工学部 情報学科 数理工学コース</sub>
+</p>

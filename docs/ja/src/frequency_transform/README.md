@@ -1,6 +1,6 @@
 # frequency_transform/ -- 周波数応答推定
 
-[English version](../../../../src/README_PIPELINE.md)
+[English version](../../../../src/frequency_transform/README.md)
 
 ## 概要
 
@@ -67,3 +67,64 @@ omega, G = run_frequency_analysis(mat_files, method='fourier', nd=100)
 
 1. 変数 `t`, `u`, `y` が個別に格納されている場合
 2. `[time, output, input]` の3列 (または3行) 配列が格納されている場合
+
+## デフォルトパラメータでの実行結果
+
+
+### デフォルト設定
+
+| パラメータ | 値 |
+|:---|:---|
+| 推定手法 | frf（同期復調法） |
+| N_d（周波数点数） | 50（論文）/ 100（コードデフォルト） |
+| 周波数範囲 | [0.1, 250] Hz (log10: [-1.0, 2.3]) |
+| T（観測時間） | 1時間 |
+| サンプリングレート | 500 Hz |
+| 過渡応答除去 | 0.02 s |
+
+### FRF推定結果（T = 1時間、N_d = 50）
+
+<table>
+<tr>
+<td align="center" width="33%">
+<img src="../../../images/1hour_bode_mag.png" alt="ボード線図 振幅" width="280"><br>
+<em>ボード線図 -- 振幅</em>
+</td>
+<td align="center" width="33%">
+<img src="../../../images/1hour_bode_phase.png" alt="ボード線図 位相" width="280"><br>
+<em>ボード線図 -- 位相</em>
+</td>
+<td align="center" width="33%">
+<img src="../../../images/1hour_nyquist.png" alt="ナイキスト線図" width="280"><br>
+<em>ナイキスト線図</em>
+</td>
+</tr>
+</table>
+
+対数周波数グリッド上の同期復調法により推定されたFRF。ナイキスト線図にはQuanser Rotary Flexible Linkの共振ループが明確に現れている。
+
+### 周波数点数 N_d の影響
+
+<table>
+<tr>
+<td align="center" width="50%">
+<img src="../../../images/50pt_bode_mag.png" alt="ボード振幅 N_d=50" width="400"><br>
+<em>ボード線図 振幅（N_d = 50）</em>
+</td>
+<td align="center" width="50%">
+<img src="../../../images/50pt_nyquist.png" alt="ナイキスト N_d=50" width="400"><br>
+<em>ナイキスト線図（N_d = 50）</em>
+</td>
+</tr>
+</table>
+
+- **N_d = 10--30**: 粗い分解能; 低次系や DI カーネルとの組み合わせに適する
+- **N_d = 50**: 推奨ベースライン; 分解能とGP計算コストのバランスが良い
+- **N_d = 100**: 高分解能; FRFの微細構造を明らかにするが、GP計算量が増加
+
+### 推定FRF（N_d = 100）
+
+<p align="center">
+<img src="../../../images/nyquist_100points.png" alt="ナイキスト100点" width="500"><br>
+<em>ナイキスト平面上の推定FRF（N_d = 100、T = 1時間）</em>
+</p>

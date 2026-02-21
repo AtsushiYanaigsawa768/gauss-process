@@ -1,6 +1,6 @@
 # fir_model/ -- FIRモデル同定
 
-[English version](../../../../src/README_PIPELINE.md)
+[English version](../../../../src/fir_model/README.md)
 
 ## 概要
 
@@ -76,3 +76,57 @@ python main.py data/sample_data/*.mat --kernel rbf --normalize \
 | FIT% | `100 * (1 - NRMSE)` |
 
 検証は `fir_validation.py` が .mat ファイルの時系列データを用いて実施する。
+
+## デフォルトパラメータでの実行結果
+
+
+### デフォルト設定
+
+| パラメータ | 値 |
+|:---|:---|
+| FIR長 | 1024タップ |
+| 上流GPカーネル | Matern-5/2 |
+| N_d（周波数点数） | 50 |
+| T（観測時間） | 1時間 |
+| サンプリングレート | 500 Hz (dt = 0.002 s) |
+| 周波数範囲 | [0.1, 250] Hz |
+| 抽出モード | Paper mode（均一omega + Hermitian IDFT） |
+
+### 時間領域検証
+
+<table>
+<tr>
+<td align="center" width="50%">
+<img src="../../../images/fir_validation_multisine.png" alt="FIR検証 - マルチサイン" width="400"><br>
+<em>マルチサイン入力での検証（RMSE = 0.0290）</em>
+</td>
+<td align="center" width="50%">
+<img src="../../../images/fir_validation_square_wave.png" alt="FIR検証 - 矩形波" width="400"><br>
+<em>矩形波入力での検証（RMSE = 0.0589）</em>
+</td>
+</tr>
+</table>
+
+| 検証信号 | RMSE (x10^-2 rad) | 説明 |
+|:---|:---:|:---|
+| マルチサイン | 2.90 | 学習時と同種の信号 |
+| 矩形波 | 5.89 | 未知の検証信号 |
+
+GPRから再構成されたFIRモデルは、**学習信号**（マルチサイン）と全く**異なる検証信号**（矩形波）の両方を正確に追従し、汎化性能を実証している。
+
+### FIR予測の詳細
+
+<table>
+<tr>
+<td align="center" width="50%">
+<img src="../../../images/gp_fir_wave_output_vs_predicted.png" alt="FIR出力 vs 予測" width="400"><br>
+<em>実出力 y(t) vs FIR予測 y_hat(t)</em>
+</td>
+<td align="center" width="50%">
+<img src="../../../images/gp_fir_wave_error.png" alt="FIR予測誤差" width="400"><br>
+<em>予測誤差 e(t) = y(t) - y_hat(t)</em>
+</td>
+</tr>
+</table>
+
+1024タップのFIR畳み込み `y_hat(t) = sum(h_k * u(t - k*dt))` により、共振挙動を含むフレキシブルリンクのダイナミクスを捕捉している。

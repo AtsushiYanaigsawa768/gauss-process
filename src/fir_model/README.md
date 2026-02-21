@@ -59,3 +59,56 @@ python -m src.fir_model.rls_filter
 ## Metrics
 
 All FIR validation routines report: RMSE, NRMSE, FIT (%), and R2.
+
+## Results with Default Parameters
+
+### Default Configuration
+
+| Parameter | Value |
+|:---|:---|
+| FIR length | 1024 taps |
+| Upstream GP kernel | Matern-5/2 |
+| N_d (frequency points) | 50 |
+| T (observation duration) | 1 hour |
+| Sampling rate | 500 Hz (dt = 0.002 s) |
+| Frequency range | [0.1, 250] Hz |
+| Extraction mode | Paper mode (uniform omega + Hermitian IDFT) |
+
+### Time-Domain Validation
+
+<table>
+<tr>
+<td align="center" width="50%">
+<img src="../../docs/images/fir_validation_multisine.png" alt="FIR validation - multisine" width="400"><br>
+<em>Multisine input validation (RMSE = 0.0290)</em>
+</td>
+<td align="center" width="50%">
+<img src="../../docs/images/fir_validation_square_wave.png" alt="FIR validation - square wave" width="400"><br>
+<em>Square-wave input validation (RMSE = 0.0589)</em>
+</td>
+</tr>
+</table>
+
+| Validation Signal | RMSE (x10^-2 rad) | Description |
+|:---|:---:|:---|
+| Multisine | 2.90 | Training signal type |
+| Square wave | 5.89 | Unseen validation signal |
+
+The FIR model reconstructed from GPR accurately tracks both the **training signal** (multisine) and a completely **different validation signal** (square wave), demonstrating generalization.
+
+### FIR Prediction Detail
+
+<table>
+<tr>
+<td align="center" width="50%">
+<img src="../../docs/images/gp_fir_wave_output_vs_predicted.png" alt="FIR output vs predicted" width="400"><br>
+<em>Actual output y(t) vs FIR prediction y_hat(t)</em>
+</td>
+<td align="center" width="50%">
+<img src="../../docs/images/gp_fir_wave_error.png" alt="FIR prediction error" width="400"><br>
+<em>Prediction error e(t) = y(t) - y_hat(t)</em>
+</td>
+</tr>
+</table>
+
+The FIR convolution `y_hat(t) = sum(h_k * u(t - k*dt))` with 1024 taps captures the flexible link dynamics, including resonance behavior.

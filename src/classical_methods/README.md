@@ -61,3 +61,31 @@ H_pred = estimator.predict(omega_grid)
 - **TLS**: When both input and output have measurement noise
 - **LPM/LRMP**: Nonparametric smoothing without assuming model order
 - **RF/GBR/SVM**: Data-driven alternatives; useful for benchmarking
+
+## Results with Default Parameters
+
+### Default Configuration
+
+| Parameter | Value |
+|:---|:---|
+| Model structure | G(jw) = N(jw) / D(jw) |
+| Numerator degree (n_b) | 2 |
+| Denominator degree (n_a) | 4 |
+| N_d (frequency points) | 50 |
+| T (observation duration) | 1 hour |
+
+The rational function model structure (n_b = 2, n_a = 4) is **physically derived** from the Quanser Rotary Flexible Link dynamics -- the plant has 2 zeros and 4 poles.
+
+### Comparison with GPR (N_d = 50, T = 1 hour)
+
+| Method | Model Order | Multisine RMSE (x10^-2 rad) | Square Wave RMSE (x10^-2 rad) |
+|:---|:---:|:---:|:---:|
+| LS (Least Squares) | n_b=2, n_a=4 | 9.79 | 26.9 |
+| **NLS (Nonlinear LS)** | n_b=2, n_a=4 | **2.75** | **5.77** |
+| GPR (Matern-5/2) | -- | 2.90 | 5.89 |
+
+- **NLS** achieves the best overall accuracy but **requires** knowing the correct model order (n_b, n_a)
+- **LS** (Levy's method) is fast but biased toward high-frequency errors
+- **GPR** achieves comparable accuracy to NLS **without** any parametric model structure -- a key advantage for unknown systems
+
+See [gpr/README.md](../gpr/README.md#kernel-comparison-nd--50-t--1-hour) for the full 11-kernel comparison table.

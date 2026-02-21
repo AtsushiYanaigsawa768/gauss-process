@@ -253,26 +253,14 @@ def _extract_fir_with_predictor(results, omega, G_smoothed, predict_fn,
     print(f"\n{'='*70}\nExtracting FIR model from {label} predictions\n{'='*70}")
     validation_mat = _resolve_validation_mat(config)
     try:
-        from gp_to_fir_direct_fixed import gp_to_fir_direct_pipeline as _pipe
+        from src.fir_model.fir_fitting import gp_to_fir_direct_pipeline as _pipe
         fir_results = _pipe(
             omega=omega, G=G_smoothed, gp_predict_func=predict_fn,
             mat_file=validation_mat, output_dir=output_dir,
-            N_fft=None, fir_length=config.fir_length)
+            fir_length=config.fir_length)
         results['fir_extraction'] = fir_results
         print(f"FIR extraction complete. Results saved to {output_dir}")
         _evaluate_wave_mat(fir_results, results, config, output_dir)
-    except ImportError:
-        try:
-            from gp_to_fir_direct import gp_to_fir_direct_pipeline as _pipe2
-            fir_results = _pipe2(
-                omega=omega, G=G_smoothed, gp_predict_func=predict_fn,
-                mat_file=validation_mat, output_dir=output_dir,
-                fir_length=config.fir_length)
-            results['fir_extraction'] = fir_results
-        except ImportError:
-            print("Warning: gp_to_fir_direct modules not available")
-        except Exception as e:
-            print(f"Error during FIR extraction: {e}")
     except Exception as e:
         print(f"Error during FIR extraction: {e}")
 

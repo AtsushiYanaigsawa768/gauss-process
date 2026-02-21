@@ -66,3 +66,63 @@ Both methods return a `pandas.DataFrame` with columns:
 Cache files are stored in `.cache/frequency_data/` by default. Each entry is
 keyed by a truncated SHA-256 hash of the input configuration (file list,
 frequency parameters, estimation method). Use `cache.invalidate()` to clear.
+
+## Results with Default Parameters
+
+### Default Configuration
+
+| Parameter | Value |
+|:---|:---|
+| Method | frf (synchronous demodulation) |
+| N_d (frequency points) | 50 (paper) / 100 (code default) |
+| Frequency range | [0.1, 250] Hz (log10: [-1.0, 2.3]) |
+| T (observation duration) | 1 hour |
+| Sampling rate | 500 Hz |
+| Transient drop | 0.02 s |
+
+### FRF Estimation Output (T = 1 hour, N_d = 50)
+
+<table>
+<tr>
+<td align="center" width="33%">
+<img src="../../docs/images/1hour_bode_mag.png" alt="Bode magnitude" width="280"><br>
+<em>Bode plot -- Magnitude</em>
+</td>
+<td align="center" width="33%">
+<img src="../../docs/images/1hour_bode_phase.png" alt="Bode phase" width="280"><br>
+<em>Bode plot -- Phase</em>
+</td>
+<td align="center" width="33%">
+<img src="../../docs/images/1hour_nyquist.png" alt="Nyquist plot" width="280"><br>
+<em>Nyquist plot</em>
+</td>
+</tr>
+</table>
+
+FRF estimated via synchronous demodulation on a logarithmic frequency grid. The Nyquist plot clearly shows the resonance loop characteristic of the Quanser Rotary Flexible Link.
+
+### Effect of Frequency Points N_d
+
+<table>
+<tr>
+<td align="center" width="50%">
+<img src="../../docs/images/50pt_bode_mag.png" alt="Bode magnitude N_d=50" width="400"><br>
+<em>Bode magnitude (N_d = 50)</em>
+</td>
+<td align="center" width="50%">
+<img src="../../docs/images/50pt_nyquist.png" alt="Nyquist N_d=50" width="400"><br>
+<em>Nyquist plot (N_d = 50)</em>
+</td>
+</tr>
+</table>
+
+- **N_d = 10--30**: Coarse resolution; suitable for low-order systems or when combined with DI kernel
+- **N_d = 50**: Recommended baseline; balances resolution and GP computational cost
+- **N_d = 100**: High resolution; reveals fine details of the FRF but increases GP complexity
+
+### Estimated FRF (N_d = 100)
+
+<p align="center">
+<img src="../../docs/images/nyquist_100points.png" alt="Nyquist 100 points" width="500"><br>
+<em>Estimated FRF on the Nyquist plane (N_d = 100, T = 1 hour)</em>
+</p>
