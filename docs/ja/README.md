@@ -214,11 +214,11 @@ pip install -r requirements.txt
 
 ```bash
 # フルパイプライン：周波数推定 + GP回帰 + FIR抽出
-python main.py input/*.mat --kernel matern --nu 2.5 --normalize --log-frequency \
+python main.py data/sample_data/*.mat --kernel matern --nu 2.5 --normalize --log-frequency \
   --nd 50 --extract-fir --fir-length 1024 --out-dir output
 
 # RBFカーネルを使用
-python main.py input/*.mat --kernel rbf --extract-fir --out-dir output
+python main.py data/sample_data/*.mat --kernel rbf --extract-fir --out-dir output
 
 # 既存のFRFデータを使用
 python main.py --use-existing output/frf.csv --kernel matern --nu 2.5

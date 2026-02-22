@@ -441,7 +441,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == '--test-mode':
         print("Running in comprehensive test mode...")
 
-        mat_pattern = 'input/*.mat'
+        mat_pattern = 'data/sample_data/*.mat'
         mat_files = sorted(glob.glob(mat_pattern))
         if not mat_files:
             print(f"Error: No MAT files found matching pattern: {mat_pattern}")

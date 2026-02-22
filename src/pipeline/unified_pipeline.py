@@ -5,20 +5,20 @@ unified_pipeline.py
 Command-line entry point for the system identification pipeline.
 
 Usage examples:
-    python -m src.pipeline.unified_pipeline input/*.mat --kernel rbf --out-dir gp_output
+    python -m src.pipeline.unified_pipeline data/sample_data/*.mat --kernel rbf --out-dir gp_output
     python -m src.pipeline.unified_pipeline --use-existing output/matched_frf.csv --kernel matern --nu 2.5
-    python -m src.pipeline.unified_pipeline input/*.mat --n-files 1 --nd 50 \\
+    python -m src.pipeline.unified_pipeline data/sample_data/*.mat --n-files 1 --nd 50 \\
         --kernel rbf --normalize --log-frequency \\
         --extract-fir --fir-length 1024 \\
-        --fir-validation-mat input/input_test_20250912_165937.mat \\
+        --fir-validation-mat data/sample_data/input_test_20250912_165937.mat \\
         --out-dir output_complete
-    python -m src.pipeline.unified_pipeline input/*.mat --n-files 1 --nd 100 --freq-method fourier \\
+    python -m src.pipeline.unified_pipeline data/sample_data/*.mat --n-files 1 --nd 100 --freq-method fourier \\
         --kernel rbf --normalize --extract-fir --fir-length 1024 \\
-        --fir-validation-mat input/input_test_20250912_165937.mat \\
+        --fir-validation-mat data/sample_data/input_test_20250912_165937.mat \\
         --out-dir output_fourier
-    python -m src.pipeline.unified_pipeline input/*.mat --n-files 1 --nd 100 \\
+    python -m src.pipeline.unified_pipeline data/sample_data/*.mat --n-files 1 --nd 100 \\
         --kernel rbf --normalize --grid-search \\
-        --fir-validation-mat input/input_test_20250912_165937.mat \\
+        --fir-validation-mat data/sample_data/input_test_20250912_165937.mat \\
         --extract-fir --fir-length 1024 \\
         --out-dir output_grid_search
 """

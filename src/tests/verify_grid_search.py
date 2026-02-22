@@ -25,7 +25,7 @@ def run_test():
     print()
 
     # Find MAT files
-    mat_pattern = "input/*.mat"
+    mat_pattern = "data/sample_data/*.mat"
     mat_files = glob.glob(mat_pattern)
 
     if not mat_files:

@@ -3,7 +3,7 @@
 Entry point for the unified system identification pipeline.
 
 Usage:
-    python main.py input/*.mat --kernel rbf --out-dir gp_output
+    python main.py data/sample_data/*.mat --kernel rbf --out-dir gp_output
     python main.py --help
 
 For detailed documentation, see src/pipeline/README.md

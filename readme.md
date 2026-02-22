@@ -310,7 +310,6 @@ gauss_process/
 │   ├── examples/            # Example scripts
 │   └── tests/               # Unit and integration tests
 ├── data/                    # Experimental data (.mat, .dat)
-├── paper_figures/           # Figure generation scripts and outputs
 ├── docs/                    # Documentation and images
 │   ├── images/              # Key figures for README
 │   └── ja/                  # Japanese documentation
@@ -337,11 +336,11 @@ pip install -r requirements.txt
 
 ```bash
 # Full pipeline: frequency estimation + GP regression + FIR extraction
-python main.py input/*.mat --kernel matern --nu 2.5 --normalize --log-frequency \
+python main.py data/sample_data/*.mat --kernel matern --nu 2.5 --normalize --log-frequency \
   --nd 50 --extract-fir --fir-length 1024 --out-dir output
 
 # Use RBF kernel
-python main.py input/*.mat --kernel rbf --extract-fir --out-dir output
+python main.py data/sample_data/*.mat --kernel rbf --extract-fir --out-dir output
 
 # Use existing FRF data
 python main.py --use-existing output/frf.csv --kernel matern --nu 2.5

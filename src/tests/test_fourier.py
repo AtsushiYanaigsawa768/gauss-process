@@ -20,7 +20,7 @@ def run_test(method_name: str, freq_method: str):
     cmd = [
         sys.executable,
         "src/unified_pipeline.py",
-        "input/*.mat",
+        "data/sample_data/*.mat",
         "--n-files", "1",
         "--nd", "50",
         "--freq-method", freq_method,

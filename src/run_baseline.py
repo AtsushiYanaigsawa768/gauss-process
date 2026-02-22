@@ -95,7 +95,7 @@ def find_frf_csv(output_dir: str) -> Optional[str]:
 
 
 def main():
-    mat_files = sorted(glob.glob('input/*.mat'))
+    mat_files = sorted(glob.glob('data/sample_data/*.mat'))
     if len(mat_files) < 2:
         print(f"ERROR: Need at least 2 MAT files. Found {len(mat_files)}")
         sys.exit(1)
