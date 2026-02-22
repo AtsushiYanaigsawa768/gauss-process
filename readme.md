@@ -58,8 +58,8 @@ The **Fourier transform** compresses extensive time-series data into a compact s
 │  Step 1: FRF    │      │  Step 2: GPR    │      │  Step 3: FIR    │      │    Evaluate     │
 │  Estimation     │─────▶│  Interpolation  │─────▶│  Reconstruction │─────▶│    (RMSE)       │
 │                 │      │                 │      │                 │      │                 │
-│  u(t),y(t) →   │      │  Continuous G   │      │  IDFT → h_k     │      │  ŷ(t) vs y(t)  │
-│  Ĝ(jω_k)       │      │  with ±2σ bands │      │  FIR convolution│      │                 │
+│  u(t),y(t) →    │      │  Continuous G   │      │  IDFT → h_k     │      │  ŷ(t) vs y(t)   │
+│  Ĝ(jω_k)        │      │  with ±2σ bands │      │  FIR convolution│      │                 │
 └─────────────────┘      └─────────────────┘      └─────────────────┘      └─────────────────┘
     ~10⁵ samples              ~100 points             FIR coefficients          Time-domain
     → ~100 FRF pts            O(N_d³) tractable       via Hermitian IDFT        validation
@@ -203,7 +203,7 @@ $$x_i = \log_{10}(\omega_i), \quad y_i \in \{\text{Re}\{\hat{G}\}, \; \text{Im}\
 
 **Predictive mean**:
 
-$$\hat{m}(x_{*}) = \boldsymbol{k}(x_{*})^\top \bigl(\boldsymbol{K} + \sigma_n^2 \boldsymbol{I}\bigr)^{-1} \boldsymbol{y}$$
+$$\hat{m}(x_{\ast}) = \boldsymbol{k}(x_{\ast})^\top \bigl(\boldsymbol{K} + \sigma_n^2 \boldsymbol{I}\bigr)^{-1} \boldsymbol{y}$$
 
 Hyperparameters are optimized via **grid search** on validation FRF data (N_val = 150 independent points).
 
@@ -227,17 +227,17 @@ $$\hat{y}(t) = \sum_{k=0}^{N-1} h_k \, u(t - k\Delta t), \quad N = \min(M, 1024)
 
 | # | Kernel | Expression | Character |
 |:---:|:---|:---|:---|
-| 1 | **RBF** | k = σ²_f exp(−(x−x')² / 2ℓ²) | Infinitely smooth (C∞) |
-| 2 | **Matérn-1/2** | k = σ²_f exp(−\|x−x'\| / ℓ) | Rough (C⁰) |
-| 3 | **Matérn-3/2** | k = σ²_f (1 + √3d/ℓ) exp(−√3d/ℓ) | Once differentiable (C¹) |
-| 4 | **Matérn-5/2** | k = σ²_f (1 + √5d/ℓ + 5d²/3ℓ²) exp(−√5d/ℓ) | Twice differentiable (C²) |
-| 5 | **Exponential** | k = σ²_f H(x)H(x') exp(−ω(x+x')) | Stability prior |
-| 6 | **DC** | k = β α^((x+x')/2) ρ^(\|x−x'\|) | Diagonal correlated |
-| 7 | **DI** | k = β α^x if x=x'; 0 otherwise | Sparse-data specialist |
-| 8 | **SS1** | k = σ²_f exp(−β min(x,x')) | 1st-order stable spline |
-| 9 | **SS2** | k = σ²_f [½ exp(−β(x+x'+max)) − ⅙ exp(−3β·max)] | 2nd-order stable spline |
-| 10 | **SSHF** | k = σ²_f (−1)^(x+x') max(exp(−βx), exp(−βx')) | High-frequency spline |
-| 11 | **Stable Spline** | k = σ²_f · ½r²(R − r/3) | System-theoretic prior |
+| 1 | **RBF** | $k = \sigma_f^2 \exp\!\bigl(-(x-x')^2 / 2\ell^2\bigr)$ | Infinitely smooth ($C^\infty$) |
+| 2 | **Matérn-1/2** | $k = \sigma_f^2 \exp\!\bigl(-\lvert x-x'\rvert / \ell\bigr)$ | Rough ($C^0$) |
+| 3 | **Matérn-3/2** | $k = \sigma_f^2 \bigl(1 + \sqrt{3}\lvert x-x'\rvert/\ell\bigr) \exp\!\bigl(-\sqrt{3}\lvert x-x'\rvert/\ell\bigr)$ | Once differentiable ($C^1$) |
+| 4 | **Matérn-5/2** | $k = \sigma_f^2 \bigl(1 + \sqrt{5}\lvert x-x'\rvert/\ell + 5\lvert x-x'\rvert^2/3\ell^2\bigr) \exp\!\bigl(-\sqrt{5}\lvert x-x'\rvert/\ell\bigr)$ | Twice differentiable ($C^2$) |
+| 5 | **Exponential** | $k = \sigma_f^2 H(x)H(x') \exp\!\bigl(-\omega(x+x')\bigr)$ | Stability prior |
+| 6 | **DC** | $k = \beta \, \alpha^{(x+x')/2} \rho^{\lvert x-x'\rvert}$ | Diagonal correlated |
+| 7 | **DI** | $k = \beta \, \alpha^x$ if $x=x'$; $0$ otherwise | Sparse-data specialist |
+| 8 | **SS1** | $k = \sigma_f^2 \exp\!\bigl(-\beta \min(x,x')\bigr)$ | 1st-order stable spline |
+| 9 | **SS2** | $k = \sigma_f^2 \bigl[\tfrac{1}{2} e^{-\beta(x+x'+\max\{x,x'\})} - \tfrac{1}{6} e^{-3\beta\max\{x,x'\}}\bigr]$ | 2nd-order stable spline |
+| 10 | **SSHF** | $k = \sigma_f^2 (-1)^{x+x'} \max\!\bigl(e^{-\beta x}, e^{-\beta x'}\bigr)$ | High-frequency spline |
+| 11 | **Stable Spline** | $k = \sigma_f^2 \cdot \tfrac{1}{2} r^2 (R - r/3)$, $r=\min\{e^{-\beta x}, e^{-\beta x'}\}$, $R=\max\{e^{-\beta x}, e^{-\beta x'}\}$ | System-theoretic prior |
 
 **Why Matérn-5/2 wins**: Its twice-differentiable (C²) sample paths match the smoothness of typical physical frequency responses. RBF (C∞) can show **logarithmic convergence** unless the target is analytic, while Matérn-5/2's finite smoothness better represents real-world dynamics.
 
@@ -361,20 +361,3 @@ python -m src.run_baseline
 Results are saved to `baseline_output/<timestamp>/`.
 
 ---
-
-## References
-
-- C.E. Rasmussen and C.K.I. Williams, *Gaussian Processes for Machine Learning*, MIT Press, 2006.
-- R. Pintelon et al., "Parametric Identification of Transfer Functions in the Frequency Domain — A Survey," *IEEE Trans. Autom. Control*, 1994.
-- L. Ljung, *System Identification: Theory for the User*, 2nd ed., Prentice Hall, 1999.
-- G. Pillonetto and G. De Nicolao, "A New Kernel-Based Approach for Linear System Identification," *Automatica*, 2010.
-- C.E. Rasmussen, "Gaussian Processes in Machine Learning," *LNCS*, vol. 3176, 2004.
-- Y. Fujimoto, "Estimation of Impulse Response Using Kernel Regularization," 2020.
-- J. Hensman et al., "Gaussian Processes for Big Data," *UAI*, 2013.
-- H. Akaike, "A New Look at the Statistical Model Identification," *IEEE Trans. Autom. Control*, 1974.
-
----
-
-<p align="center">
-  <sub>Kyoto University — Department of Applied Mathematics and Physics / School of Informatics and Mathematical Science</sub>
-</p>

@@ -238,19 +238,3 @@ python -m src.run_baseline
 結果は `baseline_output/<timestamp>/` に保存されます。
 
 ---
-
-## 参考文献
-
-- C.E. Rasmussen and C.K.I. Williams, *Gaussian Processes for Machine Learning*, MIT Press, 2006.
-- R. Pintelon et al., "Parametric Identification of Transfer Functions in the Frequency Domain — A Survey," *IEEE Trans. Autom. Control*, 1994.
-- L. Ljung, *System Identification: Theory for the User*, 2nd ed., Prentice Hall, 1999.
-- G. Pillonetto and G. De Nicolao, "A New Kernel-Based Approach for Linear System Identification," *Automatica*, 2010.
-- C.E. Rasmussen, "Gaussian Processes in Machine Learning," *LNCS*, vol. 3176, 2004.
-- J. Hensman et al., "Gaussian Processes for Big Data," *UAI*, 2013.
-- H. Akaike, "A New Look at the Statistical Model Identification," *IEEE Trans. Autom. Control*, 1974.
-
----
-
-<p align="center">
-  <sub>京都大学 — 情報学研究科 応用数学・物理学専攻 / 工学部 情報学科 数理工学コース</sub>
-</p>
