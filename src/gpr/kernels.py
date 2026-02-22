@@ -183,7 +183,8 @@ class ExponentialKernel(Kernel):
         x1, x2 = _prepare_kernel_inputs(X1), _prepare_kernel_inputs(X2)
         H1, H2 = _heaviside(x1), _heaviside(x2)
         sum_grid = x1[:, None] + x2[None, :]
-        K = np.exp(-self.params['omega'] * sum_grid) * H1[:, None] * H2[None, :]
+        K = np.exp(-self.params['omega'] * sum_grid)
+        K *= H1[:, None] * H2[None, :]
         return self.params['variance'] * K
 
     def _get_default_bounds(self):
@@ -208,7 +209,8 @@ class TCKernel(Kernel):
         x1, x2 = _prepare_kernel_inputs(X1), _prepare_kernel_inputs(X2)
         H1, H2 = _heaviside(x1), _heaviside(x2)
         max_grid = np.maximum.outer(x1, x2)
-        K = np.exp(-self.params['omega'] * max_grid) * H1[:, None] * H2[None, :]
+        K = np.exp(-self.params['omega'] * max_grid)
+        K *= H1[:, None] * H2[None, :]
         return self.params['variance'] * K
 
     def _get_default_bounds(self):
@@ -234,7 +236,8 @@ class DCKernel(Kernel):
         j = np.rint(_prepare_kernel_inputs(X2)).astype(int)
         sum_idx = (i[:, None] + j[None, :]) / 2.0
         diff_idx = np.abs(i[:, None] - j[None, :])
-        return self.params['beta'] * (self.params['alpha'] ** sum_idx) * (self.params['rho'] ** diff_idx)
+        K = (self.params['alpha'] ** sum_idx) * (self.params['rho'] ** diff_idx)
+        return self.params['beta'] * K
 
     def _get_default_bounds(self):
         return [(1e-3, 0.999), (1e-3, 1e3), (-0.999, 0.999)]
@@ -310,7 +313,9 @@ class SecondOrderStableSplineKernel(Kernel):
         beta = self.params['beta']
         sum_grid = s[:, None] + t[None, :]
         max_grid = np.maximum.outer(s, t)
-        K = 0.5 * np.exp(-beta * (sum_grid + max_grid)) - (1.0 / 6.0) * np.exp(-3.0 * beta * max_grid)
+        first_term = 0.5 * np.exp(-beta * (sum_grid + max_grid))
+        second_term = (1.0 / 6.0) * np.exp(-3.0 * beta * max_grid)
+        K = first_term - second_term
         return self.params['variance'] * K
 
     def _get_default_bounds(self):
@@ -363,7 +368,8 @@ class StableSplineKernel(Kernel):
         exp_x1, exp_x2 = np.exp(-beta * x1), np.exp(-beta * x2)
         r = np.minimum.outer(exp_x1, exp_x2)
         R = np.maximum.outer(exp_x1, exp_x2)
-        return self.params['variance'] * 0.5 * r ** 2 * (R - r / 3.0)
+        K = 0.5 * r ** 2 * (R - r / 3.0)
+        return self.params['variance'] * K
 
     def _get_default_bounds(self):
         return [(1e-3, 1e3), (1e-3, 1e3)]

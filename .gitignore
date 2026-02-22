@@ -35,4 +35,6 @@ paper_figures/temp_frf
 paper_figures/gp_results
 .cache/
 golden_output/
+validation_output/
+baseline_output/
 nul

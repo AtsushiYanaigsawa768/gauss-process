@@ -11,6 +11,7 @@ The root entry point is `main.py`, which calls `src.pipeline.unified_pipeline.ma
 
 | Module | Purpose |
 |---|---|
+| `run_baseline.py` | Reproduce baseline results (all 13 methods, standard settings) |
 | `utils/` | Shared utilities -- Hampel filter, Bode/MAT data loaders |
 | `visualization/` | Publication-quality plot helpers for I/O signals and styles |
 | `frequency_transform/` | FRF estimation (synchronous demodulation and FFT), disk cache |
@@ -45,6 +46,9 @@ python main.py data/sample_data/*.mat --kernel rbf --extract-fir --fir-length 10
 
 # Use existing frequency response data
 python main.py --use-existing output/frf.csv --kernel matern --nu 2.5
+
+# Reproduce baseline results (all 13 methods)
+python -m src.run_baseline
 ```
 
 ## Default Parameters (Paper Baseline)

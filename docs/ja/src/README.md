@@ -11,6 +11,7 @@
 
 ```
 src/
+├── run_baseline.py        ベースライン結果の再現 (全13手法、標準設定)
 ├── utils/                 共有ユーティリティ (ハンペルフィルタ、データI/O)
 ├── visualization/         プロット補助 (スタイル設定、時系列プロット)
 ├── frequency_transform/   周波数応答推定 (FRF同期復調法、FFT、キャッシュ)
@@ -57,6 +58,9 @@ python main.py --use-existing output/matched_frf.csv --kernel matern --nu 2.5
 # グリッドサーチでカーネル最適化
 python main.py data/sample_data/*.mat --kernel rbf --normalize --grid-search \
     --extract-fir --fir-length 1024 --out-dir output_grid
+
+# ベースライン結果の再現（全13手法）
+python -m src.run_baseline
 ```
 
 ## デフォルトパラメータ（論文基準条件）

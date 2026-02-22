@@ -227,6 +227,16 @@ python main.py --use-existing output/frf.csv --kernel matern --nu 2.5
 python main.py --help
 ```
 
+### ベースライン結果の再現
+
+```bash
+# 全13手法（11 GPカーネル + LS/NLS）を標準設定で実行
+# （N_d=50、全観測データ使用）
+python -m src.run_baseline
+```
+
+結果は `baseline_output/<timestamp>/` に保存されます。
+
 ---
 
 ## 参考文献

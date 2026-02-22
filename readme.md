@@ -203,7 +203,7 @@ $$x_i = \log_{10}(\omega_i), \quad y_i \in \{\text{Re}\{\hat{G}\}, \; \text{Im}\
 
 **Predictive mean**:
 
-$$\hat{m}(x_*) = \boldsymbol{k}(x_*)^\top \bigl(\boldsymbol{K} + \sigma_n^2 \boldsymbol{I}\bigr)^{-1} \boldsymbol{y}$$
+$$\hat{m}(x_{*}) = \boldsymbol{k}(x_{*})^\top \bigl(\boldsymbol{K} + \sigma_n^2 \boldsymbol{I}\bigr)^{-1} \boldsymbol{y}$$
 
 Hyperparameters are optimized via **grid search** on validation FRF data (N_val = 150 independent points).
 
@@ -215,7 +215,7 @@ GP prediction → Uniform grid interpolation → Hermitian extension → IDFT �
 
 **Impulse response via IDFT**:
 
-$$h_k = \text{Re}\left\{\frac{1}{M} \sum_{n=0}^{M-1} X_n \exp\left(\frac{j 2\pi k n}{M}\right)\right\}$$
+$$h_k = \text{Re}\!\left(\frac{1}{M} \sum_{n=0}^{M-1} X_n \exp\!\left(\frac{j 2\pi k n}{M}\right)\right)$$
 
 where Hermitian symmetry ensures a real impulse response: $X_{M-n} = X_n^*$, $M = 2N_d - 1$
 
@@ -299,6 +299,7 @@ gauss_process/
 ├── main.py                  # Entry point (pipeline CLI)
 ├── requirements.txt         # Dependencies
 ├── src/                     # All source code
+│   ├── run_baseline.py      # Reproduce baseline results (all 13 methods)
 │   ├── gpr/                 # GP regression (14 kernels, grid search, ITGP)
 │   ├── fir_model/           # FIR extraction, validation, LMS/RLS filters
 │   ├── frequency_transform/ # FRF estimation (synchronous demodulation, FFT)
@@ -348,6 +349,16 @@ python main.py --use-existing output/frf.csv --kernel matern --nu 2.5
 # Show all options
 python main.py --help
 ```
+
+### Reproducing Baseline Results
+
+```bash
+# Run all 13 methods (11 GP kernels + LS/NLS) with standard settings
+# (N_d=50, full observation data)
+python -m src.run_baseline
+```
+
+Results are saved to `baseline_output/<timestamp>/`.
 
 ---
 
