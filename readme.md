@@ -1,16 +1,20 @@
 # System Identification via Frequency-Domain Gaussian Process Regression
 
 <p align="center">
-  <img src="docs/images/flexlink.jpg" alt="Quanser Rotary Flexible Link" width="500">
+  <a href="https://www.quanser.com/products/rotary-flexible-link/">
+    <img src="docs/images/flexlink.jpg" alt="Quanser Rotary Flexible Link" width="500">
+  </a>
 </p>
 
 <p align="center">
-  <em>Quanser Rotary Flexible Link — experimental apparatus used in this study</em>
+  <em><a href="https://www.quanser.com/products/rotary-flexible-link/">Quanser Rotary Flexible Link</a> — experimental apparatus used in this study</em>
 </p>
 
 > **Paper**: A. Yanagisawa and K. Ohki, "System Identification via Frequency-Domain Gaussian Process Regression for Transfer-Function Estimation," *SICE International Symposium on Control Systems (ISCS)*, 2026.
 >
 > **Authors**: Atsushi Yanagisawa, Kentaro Ohki — Kyoto University
+>
+> **Slides**: [ISCS Presentation](https://atsushiyanaigsawa768.github.io/mysite/slides/iscs_slide.pdf)
 
 [日本語版 README](docs/ja/README.md) &nbsp;|&nbsp; [Developer docs (src/)](src/README.md)
 
@@ -174,6 +178,8 @@ The FIR model reconstructed from GPR accurately tracks both the **training signa
 | **Robustness** | RBF and SS1 maintain stable accuracy even with only 10-minute observations |
 
 > **Take-Home Message**: Frequency-domain GPR **bridges** built-in uncertainty quantification with practical, scalable system identification.
+
+> **Note on reproducibility**: While the absolute RMSE values may vary depending on the evaluation dataset, we have confirmed that the **relative ordering** among kernels remains consistent across different evaluation data.
 
 ---
 
